@@ -4,13 +4,14 @@
 
 //Dependencies
 const http = require('http');
-var https = require('https');
+var https = require('https'); //HTTP with encryption
 var url = require('url');
 var StringDecoder = require('string_decoder').StringDecoder;
 var config = require('./config');
-var fs = require('fs');
+var fs = require('fs'); // File system
+var handlers = require('./lib/handlers');
 
-//-------------------------- Delete --------------------------
+//-------------------------- Testing code for file system functionalities -> to be deleted --------------------------
 var _data = require('./lib/data'); // require the data.js file
 
 //TESTING
@@ -33,7 +34,7 @@ _data.delete('test','newFile',function(err){
 }); // (dir,file,data,callback)
 //------------------------------------------------------------
 
-//Instantiating the HTTP server
+//Instantiating a HTTP server
 var httpServer = http.createServer(
 
     //This is a call-back function, will be envoked every time server is being called
@@ -42,7 +43,7 @@ var httpServer = http.createServer(
         unifiedServer(req,res);
     }
     /**
-     * Note that this function will be called after a specific server port is already being listened,
+     * Note that this function will be called after a specific server port is already successfully being listened,
      * so no need to deal with port issue here
      */
 );
@@ -53,9 +54,12 @@ var httpsServerOptions = {
     'cert' : fs.writeFileSync('./https/cert.pem')
 };
 
-var httpsServer = https.createServer(httpsServerOptions,function(req, res){
-    unifiedServer(req,res);
-})
+var httpsServer = https.createServer(
+    httpsServerOptions,
+    function (req, res) {
+        unifiedServer(req,res);
+    }
+)
 
 //Start the HTTPS server
 httpsServer.listen(config.httpsPort, function() {
@@ -139,26 +143,4 @@ var unifiedServer = function(req, res){
 
 }
 
-//Define the handlers (object)
-var handlers ={};
 
-//Sample handler
-// handlers.sample = function(data,callback){
-//     //Callback a http status code, and a payload object
-//     callback(406,{ 'name' : 'sample handler' });
-// };
-
-// Ping handler
-handlers.ping = function(data,callback){
-    callback(200); // Send back the status code as a respond
-}
-
-//Not-found handler
-handlers.notfound = function(data,callback){
-    callback(404);
-};
-
-//Define a request router (This is an object)
-var router = {
-    'ping' : handlers.ping
-};
